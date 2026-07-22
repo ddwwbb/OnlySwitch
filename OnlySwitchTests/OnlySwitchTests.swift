@@ -114,6 +114,81 @@ class OnlySwitchTests: XCTestCase {
         XCTAssertEqual(observed, true)
     }
 
+    func testClamshellOverrideInstallsSystemCleanupTaskWithFirstAuthorization() throws {
+        let task = try ClamshellSleepCleanupTask(
+            processID: 1234,
+            identifier: "test"
+        )
+
+        XCTAssertTrue(task.installCommand.contains("/usr/bin/pmset -c disablesleep 1"))
+        XCTAssertTrue(task.installCommand.contains("/bin/launchctl bootstrap system"))
+        XCTAssertTrue(task.installCommand.contains("/usr/bin/pmset -c disablesleep 0"))
+        XCTAssertFalse(task.installCommand.contains("launchctl submit"))
+        XCTAssertFalse(task.installCommand.contains("nohup"))
+
+        var propertyListFormat = PropertyListSerialization.PropertyListFormat.xml
+        let decodedPropertyList = try PropertyListSerialization.propertyList(
+            from: task.propertyListData,
+            options: [],
+            format: &propertyListFormat
+        )
+        let propertyList = try XCTUnwrap(decodedPropertyList as? [String: Any])
+        XCTAssertEqual(propertyList["Label"] as? String, task.label)
+        XCTAssertEqual(propertyList["RunAtLoad"] as? Bool, true)
+        let arguments = try XCTUnwrap(propertyList["ProgramArguments"] as? [String])
+        XCTAssertEqual(Array(arguments.prefix(2)), ["/bin/sh", "-c"])
+        let cleanupBody = try XCTUnwrap(arguments.last)
+        XCTAssertTrue(cleanupBody.contains("/bin/kill -0 1234"))
+        XCTAssertTrue(cleanupBody.contains("/usr/bin/pmset -c disablesleep 0"))
+        XCTAssertTrue(cleanupBody.contains("/bin/launchctl bootout system/\(task.label)"))
+        XCTAssertTrue(cleanupBody.contains(task.sentinelPath))
+
+        let syntaxCheck = Process()
+        syntaxCheck.executableURL = URL(fileURLWithPath: "/bin/sh")
+        syntaxCheck.arguments = ["-n", "-c", task.installCommand]
+        try syntaxCheck.run()
+        syntaxCheck.waitUntilExit()
+        XCTAssertEqual(syntaxCheck.terminationStatus, 0)
+    }
+
+    func testClamshellOverrideStatusParsing() {
+        XCTAssertTrue(
+            ClamshellSleepOverrideCommand.isSleepDisabled(
+                output: "System-wide power settings:\n SleepDisabled\t\t1\n"
+            )
+        )
+        XCTAssertFalse(
+            ClamshellSleepOverrideCommand.isSleepDisabled(
+                output: "System-wide power settings:\n SleepDisabled\t\t0\n"
+            )
+        )
+        XCTAssertFalse(
+            ClamshellSleepOverrideCommand.isSleepDisabled(
+                output: "Currently in use:\n sleep 0\n"
+            )
+        )
+    }
+
+    func testKeepAwakeStopsOnlyWhenPowerChangesFromACToBattery() {
+        var policy = KeepAwakePowerPolicy()
+
+        XCTAssertFalse(
+            policy.shouldStopKeepAwake(isUsingACPower: true, isKeepAwakeActive: true)
+        )
+        XCTAssertTrue(
+            policy.shouldStopKeepAwake(isUsingACPower: false, isKeepAwakeActive: true)
+        )
+        XCTAssertFalse(
+            policy.shouldStopKeepAwake(isUsingACPower: false, isKeepAwakeActive: true)
+        )
+        XCTAssertFalse(
+            policy.shouldStopKeepAwake(isUsingACPower: true, isKeepAwakeActive: true)
+        )
+        XCTAssertFalse(
+            policy.shouldStopKeepAwake(isUsingACPower: false, isKeepAwakeActive: false)
+        )
+    }
+
     
     
     func testPerformanceExample() throws {

@@ -39,8 +39,6 @@ extension SwitchType {
             return XcodeCacheSwitch()
         case .hiddenFiles:
             return HiddenFilesSwitch()
-        case .radioStation:
-            return RadioStationSwitch.shared
         case .emptyTrash:
             return EmptyTrashSwitch()
         case .emptyPasteboard:
@@ -71,8 +69,6 @@ extension SwitchType {
             return HideMenubarIconsSwitch.shared
         case .fkey:
             return FKeySwitch.shared
-        case .backNoises:
-            return BackNoisesSwitch()
         case .dimScreen:
             return DimScreenSwitch()
         case .ejectDiscs:
@@ -85,8 +81,6 @@ extension SwitchType {
             return TopStickerSwitch.shared
         case .keyLight:
             return KeyLightSwitch.shared
-        case .aiCommender:
-            return AICommanderSwitch.shared
         case .authenticator:
             return AuthenticatorSwitch.shared
         }

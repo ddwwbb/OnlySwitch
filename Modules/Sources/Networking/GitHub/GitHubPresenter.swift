@@ -98,10 +98,6 @@ public final class GitHubPresenter: ObservableObject, GitHubRepositoryProtocol, 
         remoteDataSource.shortcuts(type, complete: complete)
     }
 
-    public func requestEvolutionJson<T: Decodable>(type: T.Type) async throws -> T {
-        try await remoteDataSource.evolution(type)
-    }
-
     public func downloadFile(from url: URL, to destination: URL) async throws {
         let (localURL, _) = try await session.download(from: url)
         do {

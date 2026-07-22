@@ -43,7 +43,6 @@ public enum SwitchType: UInt64, CaseIterable, Sendable {
     case bluetooth = 1024 // 1 << 10
     case xcodeCache = 2048 // 1 << 11
     case hiddenFiles = 4096 // 1 << 12
-    case radioStation = 8192 // 1 << 13
     case emptyTrash = 16_384 // 1 << 14
     case emptyPasteboard = 32_768 // 1 << 15
     case showUserLibrary = 65_536 // 1 << 16
@@ -59,14 +58,12 @@ public enum SwitchType: UInt64, CaseIterable, Sendable {
     case screenTest = 67_108_864 // 1 << 26
     case hideMenubarIcons = 134_217_728 // 1 << 27
     case fkey = 268_435_456 // 1 << 28
-    case backNoises = 536_870_912 // 1 << 29
     case dimScreen = 1_073_741_824 // 1 << 30
     case ejectDiscs = 2_147_483_648 // 1 << 31
     case hideWindows = 4_294_967_296 // 1 << 32
     case trueTone = 8_589_934_592 // 1 << 33
     case topSticker = 17_179_869_184 // 1 << 34
     case keyLight = 34_359_738_368 // 1 << 35
-    case aiCommender = 68_719_476_736 // 1 << 36
     case authenticator = 137_438_953_472 // 1 << 37
     
     public func barInfo() -> SwitchBarInfo {
@@ -152,14 +149,6 @@ public enum SwitchType: UInt64, CaseIterable, Sendable {
                 title: "Show Hidden Files",
                 onImage: NSImage(systemSymbolName: "eye"),
                 offImage: NSImage(systemSymbolName: "eye.slash")
-            )
-        case .radioStation:
-            return SwitchBarInfo(
-                title: "Radio Player",
-                onImage: NSImage(systemSymbolName: "radio"),
-                offImage: NSImage(systemSymbolName: "radio"),
-                controlType: .Player,
-                category: .audio
             )
         case .emptyTrash:
             return SwitchBarInfo(
@@ -262,14 +251,6 @@ public enum SwitchType: UInt64, CaseIterable, Sendable {
                 onImage: NSImage(systemSymbolName: "fn"),
                 offImage: NSImage(systemSymbolName: "sun.max")
             )
-        case .backNoises:
-            return SwitchBarInfo(
-                title: "Back Noises",
-                onImage: NSImage(systemSymbolName: "ear.and.waveform"),
-                offImage: NSImage(systemSymbolName: "ear"),
-                controlType: .Player,
-                category: .audio
-            )
         case .dimScreen:
             return SwitchBarInfo(
                 title: "Dim Screen",
@@ -311,14 +292,6 @@ public enum SwitchType: UInt64, CaseIterable, Sendable {
                 offImage: NSImage(systemSymbolName: "light.min")
             )
             
-        case .aiCommender:
-            return SwitchBarInfo(
-                title: "Only Agent",
-                onImage: NSImage(named: "ai_commander"),
-                offImage: NSImage(named: "ai_commander"),
-                controlType: .Button,
-                category: .tool
-            )
         case .authenticator:
             return SwitchBarInfo(
                 title: "Authenticator",
@@ -330,8 +303,6 @@ public enum SwitchType: UInt64, CaseIterable, Sendable {
     }
     
 }
-
-public let switchTypeCount = SwitchType.allCases.count
 
 public enum ControlType: String, Codable, Sendable{
     case Switch

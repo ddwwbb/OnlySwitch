@@ -14,6 +14,5 @@ struct OnlyWidgetBundle: WidgetBundle {
     @ObservedObject private var languageManager = LanguageManager.sharedManager
     var body: some Widget {
         OnlyWidgetBuildIn()
-        OnlyWidgetEvolution()
     }
 }

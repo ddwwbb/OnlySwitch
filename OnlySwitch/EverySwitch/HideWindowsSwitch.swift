@@ -38,6 +38,7 @@ final class HideWindowsSwitch: SwitchProvider, @unchecked Sendable {
         return true
     }
     
+    @MainActor
     private func saveSessionGlobal() throws {
         guard !Preferences.shared.windowsHidden else {return}
         var apps = [AppsSession]()
@@ -65,6 +66,7 @@ final class HideWindowsSwitch: SwitchProvider, @unchecked Sendable {
     
     }
     
+    @MainActor
     private func restoreSessionGlobal() throws {
         guard Preferences.shared.windowsHidden,
               let data = Preferences.shared.hiddenWindowsInfo else {return}
@@ -79,6 +81,7 @@ final class HideWindowsSwitch: SwitchProvider, @unchecked Sendable {
         
     }
     
+    @MainActor
     private func activate(name: String, url:String) throws {
         guard let app = NSWorkspace.shared.runningApplications.filter ({
             return $0.localizedName == name
@@ -106,4 +109,3 @@ private struct AppsSession: Codable {
         case appUrl
     }
 }
-

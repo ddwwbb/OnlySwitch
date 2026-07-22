@@ -23,7 +23,6 @@ struct OnlySwitchListView: View {
     @State private var distanceY:CGFloat = 0
     @State private var movingIndex = -1
     @State private var hoverIndex = -1
-    @ObservedObject private var playerItem = RadioStationSwitch.shared.playerItem
     @ObservedObject private var authenticatorStore = AuthenticatorStore.shared
     @ObservedObject private var languageManager = LanguageManager.sharedManager
     @FocusState var focusedBar: Focusable?
@@ -34,14 +33,7 @@ struct OnlySwitchListView: View {
     ]
     
     var body: some View {
-        ZStack {
-            VStack {
-                Spacer()
-                BluredSoundWave(width: listWidth, height: soundWaveHeight)
-                    .rotation3DEffect(.degrees(180), axis: (x: 1, y: 0, z: 0))
-                    .isHidden(!switchVM.soundWaveEffectDisplay || !playerItem.isPlaying, remove: true)
-            }
-            VStack {
+        VStack {
                 bottomBar
                     .offset(y: 20)
                     .opacity(0.7)
@@ -71,7 +63,6 @@ struct OnlySwitchListView: View {
                     .isHidden(SwitchListAppearance(rawValue: switchVM.currentAppearance) == .dual, remove: true)
                 
                 Spacer().frame(height:SwitchListAppearance(rawValue: switchVM.currentAppearance) == .dual ? 20 : 0)
-            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .showPopover, object: nil)) { _ in
             Task {
@@ -111,9 +102,6 @@ struct OnlySwitchListView: View {
                         } else if let item = switchVM.allItemList[index] as? ShortcutsBarVM {
                             ShortcutsBarView().environmentObject(item)
                                 .frame(height: Layout.singleSwitchHeight)
-                        } else if let item = switchVM.allItemList[index] as? EvolutionBarVM {
-                            EvolutionBarView().environmentObject(item)
-                                .frame(height: Layout.singleSwitchHeight)
                         }
                     }
                     .padding(.horizontal, 15)
@@ -135,8 +123,6 @@ struct OnlySwitchListView: View {
                         item.switchType.doSwitch()
                     } else if let item = switchVM.allItemList[index] as? ShortcutsBarVM {
                         item.runShortCut()
-                    } else if let item = switchVM.allItemList[index] as? EvolutionBarVM {
-                        item.doSwitch()
                     }
                 }
                 .animation(.easeOut, value: focusedBar)
@@ -310,31 +296,6 @@ struct OnlySwitchListView: View {
                 }
             }
 
-            if switchVM.evolutionList.count > 0 {
-                HStack {
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(.gray)
-                    Text("EVOLUTION")
-                    Rectangle()
-                        .frame(height: 1)
-                }
-                .frame(height:30)
-                .opacity(0.7)
-                .shadow(radius: 1)
-
-                LazyVGrid(columns: columns, spacing: 0) {
-                    ForEach(switchVM.evolutionList.indices, id:\.self) { index in
-                        HStack {
-                            let item = switchVM.evolutionList[index]
-                            EvolutionBarView()
-                                .environmentObject(item)
-                                .frame(height:Layout.singleSwitchHeight)
-                        }
-                    }
-                }
-            }
-            
         }
         .padding(.horizontal, 0)
     }
@@ -364,7 +325,6 @@ struct OnlySwitchListView: View {
             
         }
         .padding(.horizontal, 15)
-        .opacity(playerItem.isPlaying ? 0.5 : 1)
     }
     
     var bottomBar : some View {
@@ -382,25 +342,13 @@ struct OnlySwitchListView: View {
                 .isHidden(SwitchListAppearance(rawValue: switchVM.currentAppearance) == .dual)
             
             Spacer()
-            if playerItem.streamInfo == "" {
-                HStack {
-                    Text("Only Switch")
-                        .fontWeight(.bold)
-                        .padding(10)
-                    
-                    Text("v\(SystemInfo.majorVersion as! String)")
-                        .offset(x:-10)
-                }
-                .transition(.move(edge: .bottom))
-                
-            } else {
-                RollingText(text: playerItem.streamInfo,
-                            leftFade: 16,
-                            rightFade: 16,
-                            startDelay: 3)
-                .frame(height:20)
-                .padding(10)
-                .transition(.move(edge: .bottom))
+            HStack {
+                Text("Only Switch")
+                    .fontWeight(.bold)
+                    .padding(10)
+
+                Text("v\(SystemInfo.majorVersion as! String)")
+                    .offset(x:-10)
             }
             
             
@@ -420,7 +368,7 @@ struct OnlySwitchListView: View {
     
     
     var scrollViewHeight: CGFloat {
-        let switchCount = visableSwitchCount + switchVM.shortcutsList.count + switchVM.evolutionList.count
+        let switchCount = visableSwitchCount + switchVM.shortcutsList.count
         var totalHeight = CGFloat(switchCount) * (Layout.singleSwitchHeight + 17)
         if shouldShowAuthenticatorPanel {
             totalHeight += 45.0
@@ -432,7 +380,6 @@ struct OnlySwitchListView: View {
             totalHeight += categoryHeight(count: switchVM.cleanupItemList.count)
             totalHeight += categoryHeight(count: switchVM.shortcutsList.count)
             totalHeight += categoryHeight(count: switchVM.toolItemList.count)
-            totalHeight += categoryHeight(count: switchVM.evolutionList.count)
             totalHeight -= 30.0
         }
         
@@ -465,10 +412,6 @@ struct OnlySwitchListView: View {
         SwitchListAppearance(rawValue: switchVM.currentAppearance) == .single ? Layout.popoverWidth : Layout.popoverWidth * 2 - 40
     }
     
-    var soundWaveHeight:CGFloat {
-        SwitchListAppearance(rawValue: switchVM.currentAppearance) == .single ? Layout.soundWaveHeight : Layout.soundWaveHeight / 2
-    }
-
     var shouldShowAuthenticatorPanel: Bool {
         authenticatorStore.enabled
     }

@@ -18,5 +18,4 @@ public protocol GitHubRepositoryProtocol {
     func requestReleases<Release: GitHubReleaseLike>(releaseType: Release.Type, complete: @escaping (Result<Void, Error>) -> Void)
     func downloadDMG(complete: @escaping (Result<String, Error>) -> Void)
     func requestShortcutsJson<T: Decodable>(type: T.Type, complete: @escaping (Result<T, Error>) -> Void)
-    func requestEvolutionJson<T: Decodable>(type: T.Type) async throws -> T
 }

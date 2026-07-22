@@ -75,16 +75,6 @@ final class GitHubRemoteDataSource: @unchecked Sendable {
             .value
     }
 
-    func evolution<T: Decodable>(_ type: T.Type) async throws -> T {
-        let url = try makeRequestURL(host: .userContent, path: .evolutionJson)
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.allHTTPHeaderFields = ["Accept": "application/json"]
-        request.timeoutInterval = 60
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return try decode(data: data, type: type)
-    }
-
     private func makeRequestURL(host: URLHost = .gitHubAPI, path: EndPointKinds) throws -> URL {
         var components = URLComponents()
         components.scheme = httpsScheme
@@ -94,16 +84,5 @@ final class GitHubRemoteDataSource: @unchecked Sendable {
             throw RequestError.invalidURL
         }
         return url
-    }
-
-    private func decode<T: Decodable>(data: Data?, type: T.Type) throws -> T {
-        guard let data, !data.isEmpty else {
-            throw RequestError.analyseModelFailed
-        }
-        do {
-            return try JSONDecoder().decode(type, from: data)
-        } catch {
-            throw RequestError.analyseModelFailed
-        }
     }
 }

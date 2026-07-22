@@ -14,6 +14,15 @@ class KeepAwakeSettingVM: ObservableObject {
     @Published private var preferences = PreferencesObserver.shared.preferences
     let timeZoneDifference = TimeInterval(TimeZone.current.secondsFromGMT()) - TimeZone.current.daylightSavingTimeOffset()
    
+    var preventClamshellSleep:Bool {
+        get {
+            preferences.keepAwakePreventClamshellSleep
+        }
+        set {
+            preferences.keepAwakePreventClamshellSleep = newValue
+        }
+    }
+
     var scheduleMode:Bool {
         get {
             preferences.autoStopKeepAwakeMode.boolValue

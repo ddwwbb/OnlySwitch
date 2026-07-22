@@ -12,6 +12,8 @@
 
 # OnlySwitch
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 ***Menubar is smaller, you only need an All-in-One switch.***
 
 ## Install by Homebrew
@@ -74,15 +76,15 @@ Everyone can contribute macOS Shortcuts for OnlySwitch now. Please read [How to 
 | Xcode cache         | finished        | Show user library folder | finished          |
 | Autohide Menu Bar   | finished        | Mute                     | finished          |
 | Show hidden files   | finished        | Empty pasteboard         | finished          |
-| Radio Station       | finished        | Empty trash              | finished          |
+| Empty trash          | finished        |                          |                   |
 | Keep awake          | finished        | Show Recent Apps on Dock | finished          |
 | Spotify             | finished        | Apple Music              | finished          |
 | Screen Test & Clean | finished        | Hide Menu Bar Icons      | partly finished   |
-| FKey                | finished        | Back Noises              | finished          |
+| FKey                | finished        |                          |                   |
 | Dim Screen          | finished        | Eject Discs              | finished          |
 | Hide Windows        | partly finished | True Tone                | finished          |
 | Top Sticker         | partly finished | Key Light                | finished          |
-| Only Agent          | finished        | Authenticator            | finished          |
+| Authenticator       | finished        |                          |                   |
 
 Since Version 1.3, switches can be added to or removed from the list.
 
@@ -97,16 +99,6 @@ Since Version 1.3, switches can be added to or removed from the list.
 | Autohide menu bar in full screen | Monteray                                        | Flush DNS Cache                  |         |
 | Do Not Disturb                   | Monteray or higher                              | Upcoming Events                  |         |
 | S-GPT                            | works with S-GPT Encoder, needs OpenAI API key  | S-GPT Encoder                    |         |
-
-#### Evolution Gallery:
-
-| Evolution           | Remark | Evolution          | Remark                  |
-|---------------------|--------|--------------------|:------------------------|
-| Stage Manager       |        | Update Software    | installed via App Store |
-| Hide desktop Widget | Sonoma | Hide Desktop Icons | Sonoma                  |
-| Clamshell           |        | Wifi Switch        |                         |
-
-
 
 ## Shortcuts Actions
 
@@ -130,15 +122,6 @@ If you have other good ideas 💡, feel free to send an E-mail to me.
 ## Donate
 If you like it, help support this app by giving me a cup of coffee to keep coding. [Donate here](https://www.paypal.com/donate/?hosted_button_id=V3NDUXWZ6GVYG)
 
-## 🤖 Only Agent
-Only Switch starts to support Only Agent since 2.6.0. You can control your mac by **English** via AI now. After you write down your purpose, AI can generate an Apple Script to engage it. If the Agent mode is on, the script will be immediately executed.  There are two available model providers, with Ollama, OpenAI and Gemini. Feel free to contribute more providers.
-
-It supports only macOS 26.0 and above.
-
-<p align="center">
-<img alt="Only Agent" src="https://github.com/user-attachments/assets/3710ebf6-f93c-4436-bce2-6fcf2727e3e1" width="70%" align="center" />
-</p>
-
 ### OpenClaw (natural language)
 
 You can also control OnlySwitch by **natural language** using [OpenClaw](https://openclaw.ai/). An OpenClaw-compatible skill is included in this repo: say things like *"empty trash"*, *"toggle keep awake"*, or *"turn on dark mode"* and OpenClaw will trigger the matching switch via deeplink. See [OpenClaw/README.md](OpenClaw/README.md) for setup (extra skill directory or copy into `~/.openclaw/skills`).
@@ -147,45 +130,12 @@ You can also control OnlySwitch by **natural language** using [OpenClaw](https:/
 
 Only Switch supports Apple Widgets since version 2.5.0. The Widgets can be edited to any built-in switches and buttons. Clicking them will trigger the reflection of relevant switches and buttons. You can put Only Widgets anywhere, desktop or notification center.
 
-Since version 2.5.2, Only Widget supports Evolution.
-
 **NOTE:** After updating version 2.5.0, you might need to reset your language. If your widgets didn't follow your language settings, please kill Only Widget process, it will update.
 
 <img width="370" alt="Only Widget" src="https://github.com/jacklandrin/OnlySwitch/assets/3782279/0c1be202-9e5f-41dd-b62d-52d5a7147139">
 
-## Evolution🔥
-Evolution has come following version 2.4, you can freely DIY the switches and buttons that you want. Currently, evolution supports **Shell** and **Apple Script**. They also can be invoked by hotkeys. Next, evolution will be able to be distributed by users as a shortcut utility platform.
-
-Evolution settings page is implemented with TCA.
-PS: Evolution feature needs macOS 13.0 and above.
-
-![](https://github.com/jacklandrin/OnlySwitch/assets/3782279/69131917-bfe0-4c54-8b38-d4aeb26f749a)
-
-Everyone can contribute Evolution for OnlySwitch since version 2.4.3. Please read [How to contribute to Evolution Gallery](EvolutionGalleryContributing.md). The shared Evolutions will be displayed here:
-
-<p align="center">
-<img alt="Sits in the status bar" src="https://github.com/jacklandrin/OnlySwitch/assets/3782279/f3299ae0-0222-49a3-864a-80c6601bac6a" width="70%" align="center" />
-</p>
-
-
-### How to create an Evolution?
-So far, Evolution offers two types, with Switch and Button. 
-1. Button is very simple, when Run button is pressed, the script you added will be executed.
-2. Regarding Switch, there are four fields you can edit.
-* Check status: When OnlySwitch list appeared or some settings are changed, the switch status will be checked whether on or off. At this moment, the script of check status will be executed. You can press the debug button to output the result of this script.
-* True condition: You can input a true condition to define what is on or off for the switch status. If the true condition matches the output result, the status will be on, and vice versa.
-* Turn on: the script can change the status to on.
-* Turn off: the script can change the status to off.
-
-The debug button can verify if your scripts are valid. Before you save evolution, all scripts must pass the test.
-
 ## AirPods Switch 
 I use `classOfDevice`(2360344) to check if a Bluetooth device is Airpods Pro, but I'm not sure whether other AirPods modules are also 2360344, since I only have two AirPods Pros. If you are using AirPods 1~3, please tell me what the `classOfDevice` is. Or I can detect the count of battery value to check if AirPods (when the count is 3, it's AirPods), like **AirPods Battery Monitor For MAC OS**.
-
-## Radio Player
-Radio Player supports m3u, and aac stream, but without sound wave effect. Please send me the crash log and stream URL if your Radio Player crashes. You can close the sound wave effect on the Radio setting, and that player is AVPlayer, more stable. In version 2.3.5, the radio play can be set to enable/disabled. If the function is disabled, the switch will be invisible in the list, and the radio player will be unregistered from Now Playing(But I don't know why there will be a little delay. It should be a problem by macOS).
-
-Since Version 2.3.11, the radio list can be exported and imported.
 
 ## Hiding new Macbook Notch 
 
@@ -231,8 +181,6 @@ Since version 2.3.10, this switch can be controlled via right-click icons.
 * AirPods Battery refers to [AirPods Battery Monitor For MAC OS](https://github.com/mohamed-arradi/AirpodsBattery-Monitor-For-Mac)
 * Dynamic Wallpaper processing refer to https://itnext.io/macos-mojave-dynamic-wallpaper-fd26b0698223 and [wallpapper](https://github.com/mczachurski/wallpapper)
 * [AlertToast](https://github.com/elai950/AlertToast)
-* [AudioStreamer](https://github.com/syedhali/AudioStreamer) modified for live streaming
-* [AudioSpectrum](https://github.com/potato04/AudioSpectrum) modified for AppKit
 * [Alamofire](https://github.com/Alamofire/Alamofire)
 * Sound Source: [mixkit](https://mixkit.co) and [pixabay](https://pixabay.com)
 * [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts)
@@ -245,10 +193,6 @@ Since version 2.3.10, this switch can be controlled via right-click icons.
 * True Tone refers to [Shifty](https://github.com/thompsonate/Shifty)
 * [swift-markdown-ui](https://github.com/gonzalezreal/swift-markdown-ui)
 * Key Light refers to [mac-brightnessctl](https://github.com/rakalex/mac-brightnessctl)
-* [AIProxySwift](https://github.com/lzell/AIProxySwift)
-* [ollama-swift](https://github.com/mattt/ollama-swift)
-* [CodexKit](https://github.com/timazed/CodexKit)
-
 ## Contributors
 
 **Translation:**
@@ -265,13 +209,11 @@ Since version 2.3.10, this switch can be controlled via right-click icons.
 | Slovak   | @Svec-Tomas              | Portuguese (BR) | @EvertonCa     |
 | Czech    | @ForksApps               |                 |                |
 
-@wrngwrld for the volume slider of the radio player
-
 @kant for syntax issue 
 
 @Ryderwe for Authenticator
 
-@lou1s19 for Claud models of OnlyAgent and dim mode for the external monitor
+@lou1s19 for dim mode for the external monitor
 
 
 ## License

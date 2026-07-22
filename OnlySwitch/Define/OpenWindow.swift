@@ -16,14 +16,13 @@ enum OpenWindows: CurrentScreen {
     case Update(GitHubPresenter)
     
     func open() {
-        let persistenceController = PersistenceController.shared
         switch self {
         case .Setting:
             if let controller = Router.settingWindowController {
                 controller.showWindow(self)
                 NSApp.activate(ignoringOtherApps: true)
             } else {
-                let hostingController = NSHostingController(rootView:SettingsView().environment(\.managedObjectContext, persistenceController.container.viewContext))
+                let hostingController = NSHostingController(rootView: SettingsView())
                 let settingWindow = HostWindow(contentViewController: hostingController)
                 settingWindow.setContentSize(NSSize(width: Layout.settingWindowWidth, height: Layout.settingWindowHeight))
                 let xPos = getScreenWithMouse()!.frame.width / 2 - Layout.settingWindowWidth / 2

@@ -23,9 +23,9 @@ final class ScreenSaverSwitch: SwitchProvider, @unchecked Sendable {
                 var interval = UserDefaults.standard.integer(forKey: UserDefaults.Key.ScreenSaverInterval)
                 interval = (interval == 0) ? 300 : interval
                 let cmd = ScreenSaverCMD.on + String(interval)
-                _ = try await cmd.runAppleScript()
+                _ = try await cmd.runAppleScript(isShellCMD: true)
             } else {
-                _ = try await ScreenSaverCMD.off.runAppleScript()
+                _ = try await ScreenSaverCMD.off.runAppleScript(isShellCMD: true)
             }
         } catch {
             throw SwitchError.OperationFailed
@@ -35,7 +35,7 @@ final class ScreenSaverSwitch: SwitchProvider, @unchecked Sendable {
     @MainActor
     func currentStatus() async -> Bool {
         do {
-            getScreenSaverIntervalResult = try await ScreenSaverCMD.status.runAppleScript()
+            getScreenSaverIntervalResult = try await ScreenSaverCMD.status.runAppleScript(isShellCMD: true)
             let intervalStr = getScreenSaverIntervalResult
             let interval:Int = Int(intervalStr) ?? 300
             UserDefaults.standard.set(interval, forKey: UserDefaults.Key.ScreenSaverInterval)

@@ -55,9 +55,6 @@ struct OnlyControlReducer {
         var isAirPodsConnected: Bool = false
         var airPodsBatteryValues: [Float] = []
 
-        var soundWaveEffectDisplay: Bool {
-            Preferences.shared.soundWaveEffectDisplay
-        }
     }
 
     enum Action {
@@ -167,8 +164,6 @@ struct OnlyControlReducer {
                         }
                     } else if let shortcutControl = control as? ShortcutsBarVM {
                         shortcutControl.runShortCut()
-                    } else if let evolutionControl = control as? EvolutionBarVM {
-                        evolutionControl.doSwitch()
                     }
                     return .none
 
@@ -231,12 +226,7 @@ struct OnlyControlReducer {
                 switchControl.isOn = isOn
             }
             let shortcuts = client.fetchShortcutsList()
-            let evolutions = client.fetchEvolutionList()
-            for evolutionControl in evolutions {
-                await evolutionControl.refresh()
-            }
-
-            let allUnits: [BarProvider] = switches + shortcuts + evolutions
+            let allUnits: [BarProvider] = switches + shortcuts
 
             let orderDic = UserDefaults.standard.dictionary(forKey: UserDefaults.Key.onlyControlOrderWeight) as? [String: Int] ?? [String: Int]()
 
@@ -282,28 +272,6 @@ struct OnlyControlReducer {
                         weight: weight,
                         unitType: .shortcuts
                     )
-                } else if let evolutionVM = unit as? EvolutionBarVM {
-                    let key = "evolution-" + evolutionVM.id
-                    let weight = orderDic[key] ?? evolutionVM.weight
-                    let imageName = evolutionVM.iconName ??
-                    (
-                        evolutionVM.controlType == .Switch
-                        ? "lightswitch.on.square"
-                        : "button.programmable.square.fill"
-                    )
-                    let image = NSImage(systemSymbolName: imageName)
-
-                    return ControlItemViewState(
-                        id: evolutionVM.id,
-                        title: evolutionVM.barName,
-                        iconData: image
-                            .resizeMaintainingAspectRatio(withSize: NSSize(width: 60, height: 60))!
-                            .pngData!,
-                        controlType: evolutionVM.controlType,
-                        status: evolutionVM.isOn,
-                        weight: weight,
-                        unitType: .evolution
-                    )
                 } else {
                     return nil
                 }
@@ -326,8 +294,6 @@ private extension UnitType {
                 return "switch-"
             case .shortcuts:
                 return "shortcuts-"
-            case .evolution:
-                return "evolution-"
         }
     }
 }

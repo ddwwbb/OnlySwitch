@@ -5,6 +5,7 @@
 //  Created by Jacklandrin on 2021/12/8.
 //
 
+import Combine
 import SwiftUI
 
 struct GaugeProgressStyle: ProgressViewStyle {

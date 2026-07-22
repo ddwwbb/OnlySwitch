@@ -56,9 +56,9 @@ public struct VolumeCMD {
 
 
 public struct ScreenSaverCMD:SwitchCMD {
-    public static let status: String = "tell application \"System Events\" to tell screen saver preferences to get delay interval"
-    public static let on: String = "tell application \"System Events\" to tell screen saver preferences to set delay interval to " // + value
-    public static let off: String = "tell application \"System Events\" to tell screen saver preferences to set delay interval to 0"
+    public static let status: String = "/usr/bin/defaults -currentHost read com.apple.screensaver idleTime"
+    public static let on: String = "/usr/bin/defaults -currentHost write com.apple.screensaver idleTime -int " // + value
+    public static let off: String = "/usr/bin/defaults -currentHost write com.apple.screensaver idleTime -int 0"
 }
 
 public struct AutohideDockCMD:SwitchCMD {

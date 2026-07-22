@@ -21,10 +21,6 @@ class SwitchListVM: ObservableObject, CurrentScreen {
         return model.shortcutsList
     }
 
-    var evolutionList: [EvolutionBarVM] {
-        return model.evolutionItemList
-    }
-
     var maxHeight: CGFloat {
         return model.maxHeight
     }
@@ -51,10 +47,6 @@ class SwitchListVM: ObservableObject, CurrentScreen {
 
     var sortMode: Bool {
         return model.sortMode
-    }
-
-    var soundWaveEffectDisplay: Bool {
-        return Preferences.shared.soundWaveEffectDisplay
     }
 
     var currentAppearance: String {
@@ -87,17 +79,12 @@ class SwitchListVM: ObservableObject, CurrentScreen {
         self.refreshMaxHeight()
         self.model.switchList = SwitchManager.shared.barVMList
         self.model.shortcutsList = SwitchManager.shared.shortcutsBarVMList()
-        self.model.evolutionItemList = SwitchManager.shared.activeEvolutionList()
     }
 
     @MainActor
     private func refreshSwitchStatus() async {
         for option in switchList {
             option.refreshStatus()
-        }
-        
-        for option in evolutionList {
-            await option.refresh()
         }
     }
 
@@ -114,18 +101,11 @@ class SwitchListVM: ObservableObject, CurrentScreen {
         model.sortMode = false
         refreshList()
         await refreshSwitchStatus()
-        model.allItemList = switchList.filter{ !$0.isHidden } + shortcutsList + evolutionList
+        model.allItemList = switchList.filter{ !$0.isHidden } + shortcutsList
         //for sorting
         let orderDic = UserDefaults.standard.dictionary(forKey: UserDefaults.Key.orderWeight) as? [String:Int] ?? [String:Int]()
         for item in allItemList {
-            let type:String
-            if item is SwitchBarVM {
-                type = "switch-"
-            } else if item is ShortcutsBarVM {
-                type = "shortcuts-"
-            } else {
-                type = "evolution-"
-            }
+            let type = item is SwitchBarVM ? "switch-" : "shortcuts-"
             let key = type + item.barName
             let weight = orderDic[key] ?? 10000
             item.weight = weight
@@ -158,14 +138,7 @@ class SwitchListVM: ObservableObject, CurrentScreen {
         var orderDic = [String: Int]()
         for (index, item) in allItemList.enumerated() {
             item.weight = index
-            let type: String
-            if item is SwitchBarVM {
-                type = "switch-"
-            } else if item is ShortcutsBarVM {
-                type = "shortcuts-"
-            } else {
-                type = "evolution-"
-            }
+            let type = item is SwitchBarVM ? "switch-" : "shortcuts-"
             let key = type + item.barName
             orderDic[key] = index
         }
@@ -177,4 +150,3 @@ class SwitchListVM: ObservableObject, CurrentScreen {
         SettingsWindow.shared.show()
     }
 }
-

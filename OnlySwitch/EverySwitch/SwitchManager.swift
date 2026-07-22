@@ -70,17 +70,11 @@ final class SwitchManager: @unchecked Sendable {
     @MainActor
     func registerSwitchesShouldShow() {
         let state = getAllSwitchState()
-        for index in 0..<switchTypeCount {
-            let bitwise:UInt64 = 1 << index
+        for type in SwitchType.allCases {
+            let bitwise = type.rawValue
             let shouldShow = (state & bitwise == 0) ? false : true
             if shouldShow {
-                let type = SwitchType(rawValue: bitwise)!
-                if type == .radioStation {
-                    self.register(aswitch: RadioStationSwitch.shared)
-                } else {
-                    self.register(aswitch: type.getNewSwitchInstance())
-                }
-                
+                self.register(aswitch: type.getNewSwitchInstance())
             }
         }
     }
@@ -94,26 +88,5 @@ final class SwitchManager: @unchecked Sendable {
             UserDefaults.standard.synchronize()
             return 16383
         }
-    }
-
-    func activeEvolutionList() -> [EvolutionBarVM] {
-        guard let evolutionIDs = UserDefaults.standard.array(forKey: UserDefaults.Key.evolutionIDs) as? [String] else {
-            UserDefaults.standard.setValue([String](), forKey: UserDefaults.Key.evolutionIDs)
-            return []
-        }
-
-        let bars:[EvolutionBarVM?] = evolutionIDs.map {
-            guard
-                let id = UUID(uuidString: $0),
-                let entity = try? EvolutionCommandEntity.fetchRequest(by: id),
-                let item = EvolutionAdapter.toEvolutionItem(entity)
-            else {
-                return nil
-            }
-
-            return EvolutionBarVM(evolutionItem: item)
-        }
-
-        return bars.compactMap{$0}
     }
 }

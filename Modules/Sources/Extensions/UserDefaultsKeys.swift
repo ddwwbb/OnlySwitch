@@ -14,8 +14,6 @@ public extension UserDefaults {
         public static let appearanceColumnCount = "appearanceColumnCountKey"
         public static let showAds = "showAdsKey"
         public static let showDesktopPet = "showDesktopPetKey"
-        //Evolution
-        public static let evolutionIDs = "evolutionIDsKey"
         //PomodoroTimer
         public static let WorkDuration = "WorkDurationKey"
         public static let RestDuration = "RestDurationKey"
@@ -25,14 +23,6 @@ public extension UserDefaults {
         public static let PTimerCycleCount = "PTimerLoopCountKey"
         //AirPods
         public static let AirPodsAddress = "AirPodsAddressKey"
-        //Radio
-        public static let soundWaveEffectDisplay = "soundWaveEffectDisplayKey"
-        public static let volume = "volumeKey"
-        public static let hasRunRadio = "hasRunRadioKey"
-        public static let radioStation = "radioStationKey"
-        public static let allowNotificationChangingStation = "allowNotificationChangingStationKey"
-        public static let allowNotificationTrack = "allowNotificationTrack"
-        public static let radioEnable = "radioEnable"
         //Hidden menubar
         public static let isMenubarCollapse = "isMenubarCollapseKey"
         public static let autoCollapseMenubarTime = "autoCollapseMenubarTimeKey"
@@ -44,15 +34,13 @@ public extension UserDefaults {
         //Sort
         public static let orderWeight = "orderWeightKey"
         public static let onlyControlOrderWeight = "onlyControlOrderWeightKey"
-        //BackNoises
-        public static let backNoisesTrack = "backNoisesTrackKey"
-        public static let automaticallyStopPlayNoiseTime = "automaticallyStopPlayNoiseTimeKey"
         //Keep Awake
         public static let autoStopKeepAwakeMode = "autoStopKeepAwakeModeKey"
         public static let autoStopKeepAwakeTime = "autoStopKeepAwakeTimeKey"
         public static let autoStopKeepAwakeStartDate = "autoStopKeepAwakeStartDateKey"
         public static let autoStopKeepAwakeEndDate = "autoStopKeepAwakeEndDateKey"
         public static let KeepAwakeKey = "KeepAwakeKey"
+        public static let keepAwakePreventClamshellSleep = "keepAwakePreventClamshellSleepKey"
         //Dim Screen
         public static let autoDimScreenTime = "autoDimScreenTimeKey"
         public static let dimScreenPercent = "dimScreenPercentKey"
@@ -67,14 +55,6 @@ public extension UserDefaults {
         public static let hiddenWindowsInfo = "hiddenWindowsInfoKey"
         //Sticker
         public static let sticker = "stickerKey"
-        //OnlyAgent
-        public static let currentAIModel = "currentAIModelKey"
-        public static let ollamaUrl = "ollamaUrlKey"
-        public static let ollamaModels = "ollamaModelsKey"
-        public static let openAIAPI = "openAIAPIKey"
-        public static let openAIHost = "openAIHostKey"
-        public static let geminiAPI = "geminiAPIKey"
-        public static let claudeAPI = "claudeAPIKey"
         //KeyLight
         public static let keyLightBrightness = "keyLightBrightnessKey"
         // Authenticator

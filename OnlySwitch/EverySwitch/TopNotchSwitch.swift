@@ -65,7 +65,10 @@ final class TopNotchSwitch: SwitchProvider, @unchecked Sendable, CurrentScreen {
         guard let screen = getScreenWithMouse() else { return false }
         guard let topLeftArea = screen.auxiliaryTopLeftArea, let _ = screen.auxiliaryTopRightArea else { return false }
         
-        notchHeight = NSApplication.shared.mainMenu?.menuBarHeight ?? (topLeftArea.height + 5) //auxiliaryTopLeftArea is not equivalent to menubar's height
+        let menuBarHeight = MainActor.assumeIsolated {
+            NSApplication.shared.mainMenu?.menuBarHeight
+        }
+        notchHeight = menuBarHeight ?? (topLeftArea.height + 5) //auxiliaryTopLeftArea is not equivalent to menubar's height
         Logger.internalSwitch.debug("get notchHeight:\(self.notchHeight)")
         return true
     }

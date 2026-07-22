@@ -19,7 +19,6 @@ Match user intent (e.g. "empty trash", "toggle keep awake") to one row below, th
 | 1024 | Bluetooth | bluetooth |
 | 2048 | Xcode Derived Data | xcode cache, derived data, clear xcode cache |
 | 4096 | Show Hidden Files | hidden files, show hidden files |
-| 8192 | Radio Player | radio, radio station |
 | 16384 | Empty Trash | empty trash, trash |
 | 32768 | Empty Pasteboard | empty pasteboard, clear clipboard, pasteboard |
 | 65536 | Show User Library | user library, show library |
@@ -35,14 +34,12 @@ Match user intent (e.g. "empty trash", "toggle keep awake") to one row below, th
 | 67108864 | Screen Test | screen test |
 | 134217728 | Hide Menu Bar Icons | hide menu bar icons, menubar icons |
 | 268435456 | FKey | fkey, function key |
-| 536870912 | Back Noises | back noises, background noise |
 | 1073741824 | Dim Screen | dim screen |
 | 2147483648 | Eject Discs | eject discs, eject |
 | 4294967296 | Hide Windows | hide windows |
 | 8589934592 | True Tone | true tone |
 | 17179869184 | Top Sticker | top sticker, sticker |
 | 34359738368 | Key Light | key light |
-| 68719476736 | Only Agent | only agent, ai commander, ai commender |
 | 137438953472 | Authenticator | authenticator |
 
 When the user's request doesn't exactly match a title, use the **Aliases** column (and the title) to pick the correct id.

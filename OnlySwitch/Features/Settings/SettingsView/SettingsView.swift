@@ -8,7 +8,6 @@
 import SwiftUI
 import Authenticator
 import Utilities
-import OnlyAgent
 
 struct SettingsView: View {
     @StateObject var settingVM = SettingsVM.shared
@@ -75,9 +74,6 @@ struct SettingsView: View {
             case .AirPods:
                 AirPodsSettingView()
 
-            case .Radio:
-                RadioSettingView()
-
             case .Authenticator:
                 AuthenticatorSettingsView()
 
@@ -96,25 +92,12 @@ struct SettingsView: View {
             case .HideMenubarIcons:
                 HideMenubarIconsSettingView()
 
-            case .BackNoises:
-                BackNoisesSettingView()
-
             case .KeepAwake:
                 KeepAwakeSettingView()
 
             case .DimScreen:
                 DimScreenSettingView()
 
-            case .Evolution:
-                EvolutionView(store: settingVM.evolutionStore)
-
-            case .ModelProviders:
-                if #available(macOS 26.0, *) {
-                    ModelProviderSettingView()
-                } else {
-                    EmptyView()
-                }
-            
             case .NightShift:
                 NightShiftSettingsView()
 

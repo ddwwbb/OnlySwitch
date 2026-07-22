@@ -18,34 +18,32 @@ public struct StickerView: View {
     }
     
     public var body: some View {
-        WithPerceptionTracking {
-            ZStack {
-                VStack (spacing: 0) {
-                    StickerBarView(store: store)
-                    if !store.collaspeMode {
-                        StickerContentView(store: store)
-                            .padding(.top, 5)
-                    }
-                }
-                .background(Color(store.stickerColor.content))
-                
-                if store.isColorSelectorPresented {
-                    StickerColorSelectorView(store: store)
+        ZStack {
+            VStack (spacing: 0) {
+                StickerBarView(store: store)
+                if !store.collaspeMode {
+                    StickerContentView(store: store)
+                        .padding(.top, 5)
                 }
             }
-            .opacity(isOpacity(canTranslucent: store.canTranslucent, isHovering: store.isHovering) ? 0.6 : 1.0)
-            .onHover { isHovering in
-                store.send(.hover(isHovering))
+            .background(Color(store.stickerColor.content))
+
+            if store.isColorSelectorPresented {
+                StickerColorSelectorView(store: store)
             }
-            .onChange(of: controlActiveState) { newValue in
-                switch newValue {
-                case .key, .active:
-                    break
-                case .inactive:
-                    store.send(.saveContent)
-                @unknown default:
-                    break
-                }
+        }
+        .opacity(isOpacity(canTranslucent: store.canTranslucent, isHovering: store.isHovering) ? 0.6 : 1.0)
+        .onHover { isHovering in
+            store.send(.hover(isHovering))
+        }
+        .onChange(of: controlActiveState) { _, newValue in
+            switch newValue {
+            case .key, .active:
+                break
+            case .inactive:
+                store.send(.saveContent)
+            @unknown default:
+                break
             }
         }
     }

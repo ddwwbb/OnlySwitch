@@ -4,7 +4,6 @@
 //
 //  Created by Jacklandrin on 2021/12/5.
 //
-#pragma once
 #import "CBBlueLightClient.h"
 #import "CBTrueToneClient.h"
 #import "BrightnessControl.h"
@@ -25,4 +24,3 @@ extern int DisplayServicesGetLinearBrightness(CGDirectDisplayID display, float *
 extern int DisplayServicesSetLinearBrightness(CGDirectDisplayID display, float brightness);
 
 extern void CGSServiceForDisplayNumber(CGDirectDisplayID display, io_service_t* service);
-

@@ -29,14 +29,14 @@ struct ControlItemSecondaryInformationTests {
         let iconData = NSImage(systemSymbolName: "gear").tiffRepresentation!
         let first = ControlItemViewState(
             id: "agent",
-            title: "Only Agent",
+            title: "System Tool",
             subtitle: "gpt-5.6-sol",
             iconData: iconData,
             controlType: .Button
         )
         let second = ControlItemViewState(
             id: "agent",
-            title: "Only Agent",
+            title: "System Tool",
             subtitle: "gpt-5.5",
             iconData: iconData,
             controlType: .Button

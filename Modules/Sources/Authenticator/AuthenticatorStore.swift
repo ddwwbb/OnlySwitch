@@ -5,6 +5,7 @@
 
 import Foundation
 import Extensions
+import Utilities
 
 @MainActor
 public final class AuthenticatorStore: ObservableObject {

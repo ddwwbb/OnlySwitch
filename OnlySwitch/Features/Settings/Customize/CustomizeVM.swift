@@ -19,10 +19,10 @@ class CustomizeVM:ObservableObject {
     @Published var showErrorToast = false
     init() {
         let state = SwitchManager.shared.getAllSwitchState()
-        for index in 0..<switchTypeCount {
-            let bitwise:UInt64 = 1 << index
+        for type in SwitchType.allCases {
+            let bitwise = type.rawValue
             let toggle = (state & bitwise == 0) ? false : true
-            allSwitches.append(CustomizeItem(type: SwitchType(rawValue: bitwise)!, toggle: toggle, error: { [weak self] info in
+            allSwitches.append(CustomizeItem(type: type, toggle: toggle, error: { [weak self] info in
                 guard let strongSelf = self else {return}
                 strongSelf.errorInfo = info
                 strongSelf.showErrorToast = true
@@ -41,20 +41,12 @@ class CustomizeItem: ObservableObject {
     {
         didSet {
             if toggle {
-                if type == .radioStation {
-                    SwitchManager.shared.register(aswitch: RadioStationSwitch.shared)
-                } else {
-                    SwitchManager.shared.register(aswitch: type.getNewSwitchInstance())
-                }
-                
+                SwitchManager.shared.register(aswitch: type.getNewSwitchInstance())
             } else {
                 if SwitchManager.shared.shownSwitchCount < 5 {
                     error("At least remain 4 switches")
                     toggle = true
                     return
-                }
-                if type == .radioStation {
-                    RadioStationSwitch.shared.playerItem.isPlaying = false
                 }
                 SwitchManager.shared.unregister(for: type)
             }

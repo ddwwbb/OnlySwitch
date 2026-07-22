@@ -1,0 +1,79 @@
+name: Build macOS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test and Build
+    runs-on: macos-26
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Show environment
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+
+      - name: Test Swift packages
+        run: swift test --package-path Modules
+
+      - name: Test app
+        run: |
+          xcodebuild -quiet \
+            -project OnlySwitch.xcodeproj \
+            -scheme OnlySwitch \
+            -configuration Debug \
+            -derivedDataPath "$RUNNER_TEMP/OnlySwitchDerivedData" \
+            -destination "platform=macOS" \
+            -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            test
+
+      - name: Build universal Release app
+        run: |
+          xcodebuild -quiet \
+            -project OnlySwitch.xcodeproj \
+            -scheme OnlySwitch \
+            -configuration Release \
+            -derivedDataPath "$RUNNER_TEMP/OnlySwitchDerivedData" \
+            -destination "generic/platform=macOS" \
+            -skipMacroValidation \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Package app
+        run: |
+          APP_PATH="$RUNNER_TEMP/OnlySwitchDerivedData/Build/Products/Release/OnlySwitch.app"
+          ARCHIVE_PATH="$RUNNER_TEMP/OnlySwitch-macOS-universal.zip"
+          test -d "$APP_PATH"
+          lipo "$APP_PATH/Contents/MacOS/OnlySwitch" -verify_arch arm64
+          lipo "$APP_PATH/Contents/MacOS/OnlySwitch" -verify_arch x86_64
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ARCHIVE_PATH"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: OnlySwitch-macOS-universal
+          path: ${{ runner.temp }}/OnlySwitch-macOS-universal.zip
+          if-no-files-found: error
+          retention-days: 14

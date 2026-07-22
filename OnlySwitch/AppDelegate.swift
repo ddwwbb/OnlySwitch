@@ -13,13 +13,11 @@ import Switches
 import Utilities
 import OnlyControl
 import Networking
-import FirebaseCore
 import Extensions
 import DesktopPet
 
 @main
 struct OnlySwitchApp: App {
-    let persistenceController = PersistenceController.shared
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @ObservedObject var preferencesvm = PreferencesObserver.shared
     @State var preferences = PreferencesObserver.shared.preferences
@@ -46,32 +44,21 @@ struct OnlySwitchApp: App {
                           let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
                           let queryItems = components.queryItems,
                           let typeStr = queryItems.first(where: {$0.name == "type"})?.value,
-                          let unitType =  UnitType(rawValue: typeStr),
+                          UnitType(rawValue: typeStr) == .builtIn,
                           let id = queryItems.first(where: {$0.name == "id"})?.value
                     else {
                         return
                     }
 
-                    if unitType == .builtIn {
-                        guard
-                            let intID = UInt64(id),
-                            let type = SwitchType(rawValue: intID)
-                        else {
-                            return
-                        }
-                        let theSwitch = CustomizeVM.shared.allSwitches.first{ $0.type == type }
-                        Task {
-                            await theSwitch?.doSwitch()
-                        }
-                    } else if unitType == .evolution {
-                        guard
-                            let uuid = UUID(uuidString: id),
-                            let entity = try? EvolutionCommandEntity.fetchRequest(by: uuid)
-                        else {
-                            return
-                        }
-                        let item = EvolutionAdapter.toEvolutionItem(entity)
-                        item?.doSwitch()
+                    guard
+                        let intID = UInt64(id),
+                        let type = SwitchType(rawValue: intID)
+                    else {
+                        return
+                    }
+                    let theSwitch = CustomizeVM.shared.allSwitches.first{ $0.type == type }
+                    Task {
+                        await theSwitch?.doSwitch()
                     }
                 }
         }
@@ -85,21 +72,6 @@ struct OnlySwitchApp: App {
         .handlesExternalEvents(matching: Set(arrayLiteral: "SettingsWindow"))
         .commands{
             CommandMenu("Switches Availability") {
-                Button(action: {
-                    preferencesvm.preferences.radioEnable = !preferences.radioEnable
-                    if preferences.radioEnable {
-                        PlayerManager.shared.player.setupRemoteCommandCenter()
-                    } else {
-                        RadioStationSwitch.shared.playerItem.isPlaying = false
-                        PlayerManager.shared.player.clearCommandCenter()
-                    }
-                }, label: {
-                    if preferencesvm.preferences.radioEnable {
-                        Text("Disable Player")
-                    } else {
-                        Text("Enable Player")
-                    }
-                })
                 Button(action: {
                     preferencesvm.preferences.menubarCollaspable = !preferences.menubarCollaspable
                 }, label: {
@@ -175,10 +147,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var checkUpdatePresenter = GitHubPresenter.shared
     private var desktopPetController: DesktopPetController?
 
+    private var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+            || NSClassFromString("XCTestCase") != nil
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
-        FirebaseApp.configure()
-        // Migrate API keys from UserDefaults to Keychain if needed
-        KeychainMigration.migrateAPIKeysIfNeeded()
+        guard !isRunningTests else { return }
+
         //for issue #11
         closeWindow()
         let contentView = OnlySwitchListView()
@@ -194,7 +170,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         SwitchManager.shared.registerSwitchesShouldShow()
 
         blManager = BluetoothDevicesManager.shared
-        RadioStationSwitch.shared.setDefaultRadioStations()
         Bundle.setLanguage(lang: LanguageManager.sharedManager.currentLang)
 
         registerShortcut()
@@ -220,6 +195,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        guard !isRunningTests else { return }
+
         OnlyControlWindow.shared.onVisibilityChanged = nil
         NotificationCenter.default.removeObserver(
             self,
@@ -306,14 +283,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
-        if let entities = try? EvolutionCommandEntity.fetchResult() {
-            let evolutionItems = EvolutionAdapter.evolutionItems(entities)
-            evolutionItems.forEach{ item in
-                KeyboardShortcuts.onKeyDown(for: KeyboardShortcuts.Name(rawValue: item.id.uuidString)!) {
-                    item.doSwitch()
-                }
-            }
-        }
     }
 
     private func closeWindow() {

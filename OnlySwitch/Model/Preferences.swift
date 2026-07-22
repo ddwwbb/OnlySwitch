@@ -52,43 +52,6 @@ final class Preferences: @unchecked Sendable {
     @UserDefaultValue(key: UserDefaults.Key.AirPodsAddress, defaultValue: nil)
     var airPodsAddress:String?
 
-    // MARK: - Radio
-    @UserDefaultValue(key: UserDefaults.Key.volume, defaultValue: 1.0)
-    var volume:Float
-    {
-        didSet {
-            let userInfo = [ "newValue" : volume ]
-            NotificationCenter.default.post(name: .volumeChange, object: nil, userInfo: userInfo)
-        }
-    }
-
-    @UserDefaultValue(key: UserDefaults.Key.soundWaveEffectDisplay, defaultValue: true)
-    var soundWaveEffectDisplay:Bool{
-        didSet {
-            NotificationCenter.default.post(name: .soundWaveToggle, object: nil)
-            NotificationCenter.default.post(name: .refreshSingleSwitchStatus, object: SwitchType.radioStation)
-            NotificationCenter.default.post(name: .refreshSingleSwitchStatus, object: SwitchType.backNoises)
-        }
-    }
-
-    @UserDefaultValue(key: UserDefaults.Key.allowNotificationChangingStation, defaultValue: false)
-    var allNotificationChangingStation:Bool
-
-    @UserDefaultValue(key: UserDefaults.Key.allowNotificationTrack, defaultValue: false)
-    var allNotificationTrack:Bool
-
-    @UserDefaultValue(key: UserDefaults.Key.radioEnable, defaultValue: true)
-    var radioEnable:Bool {
-        didSet {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                NotificationCenter.default.post(name: .changeSettings, object: nil)
-            }
-        }
-    }
-
-    @UserDefaultValue(key: UserDefaults.Key.radioStation, defaultValue: nil)
-    var radioStationID:String?
-
     // MARK: - Shortcuts
     @UserDefaultValue(key: UserDefaults.Key.shortcutsDic, defaultValue: nil)
     var shortcutsDic:[String:Bool]?
@@ -149,21 +112,6 @@ final class Preferences: @unchecked Sendable {
         autoCollapseMenubarTime != 0
     }
 
-    // MARK: - BackNoises
-    @UserDefaultValue(key: UserDefaults.Key.backNoisesTrack, defaultValue: "White Noises")
-    var backNoisesTrack:String
-
-    @UserDefaultValue(key: UserDefaults.Key.automaticallyStopPlayNoiseTime, defaultValue: 0)
-    var automaticallyStopPlayNoiseTime:Int {
-        didSet {
-            NotificationCenter.default.post(name: .changeAutoStopNoiseTime, object: nil)
-        }
-    }
-
-    var isAutoStopNoise:Bool {
-        automaticallyStopPlayNoiseTime != 0
-    }
-
     @UserDefaultValue(key: UserDefaults.Key.autoStopKeepAwakeMode, defaultValue: 1)
     var autoStopKeepAwakeMode:Int
     {
@@ -190,6 +138,14 @@ final class Preferences: @unchecked Sendable {
 
     @UserDefaultValue(key: UserDefaults.Key.autoStopKeepAwakeEndDate, defaultValue: 0.0)
     var autoStopKeepAwakeEndDate:Double
+    {
+        didSet {
+            NotificationCenter.default.post(name: .changeKeepAwakeSetting, object: nil)
+        }
+    }
+
+    @UserDefaultValue(key: UserDefaults.Key.keepAwakePreventClamshellSleep, defaultValue: false)
+    var keepAwakePreventClamshellSleep:Bool
     {
         didSet {
             NotificationCenter.default.post(name: .changeKeepAwakeSetting, object: nil)

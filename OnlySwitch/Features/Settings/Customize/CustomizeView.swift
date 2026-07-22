@@ -80,22 +80,6 @@ private struct CustomizeRowView: View {
                     Text("Enable".localized())
                 }
             })
-        } else if item.type == .radioStation || item.type == .backNoises {
-            Button(action: {
-                preferencesvm.preferences.radioEnable.toggle()
-                if preferencesvm.preferences.radioEnable {
-                    PlayerManager.shared.player.setupRemoteCommandCenter()
-                } else {
-                    RadioStationSwitch.shared.playerItem.isPlaying = false
-                    PlayerManager.shared.player.clearCommandCenter()
-                }
-            }, label: {
-                if preferencesvm.preferences.radioEnable {
-                    Text("Disable".localized())
-                } else {
-                    Text("Enable".localized())
-                }
-            })
         }
     }
 }

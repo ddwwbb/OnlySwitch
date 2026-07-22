@@ -120,11 +120,13 @@ final class ShortcutsSettingVM:ObservableObject, @unchecked Sendable {
                     }
                 }
             } else {
-                self.model.shortcutsList = allshortcuts.map{ ShortcutsItem(name: String($0), toggle: false, error: {[weak self] info in
-                    guard let strongSelf = self else {return}
-                    strongSelf.model.errorInfo = info
-                    strongSelf.model.showErrorToast = true
-                }) }
+                self.model.shortcutsList = allshortcuts.map {
+                    ShortcutsItem(
+                        name: String($0),
+                        toggle: false,
+                        error: self.makeErrorHandler()
+                    )
+                }
                 for name in allshortcuts {
                     newShortcutsDic[String(name)] = false
                 }
@@ -135,11 +137,17 @@ final class ShortcutsSettingVM:ObservableObject, @unchecked Sendable {
     }
 
     func addItem(name: String, toggle: Bool) {
-        self.model.shortcutsList.append(ShortcutsItem(name: String(name), toggle: toggle, error: {[weak self] info in
-            guard let strongSelf = self else {return}
-            strongSelf.model.errorInfo = info
-            strongSelf.model.showErrorToast = true
-        }))
+        self.model.shortcutsList.append(
+            ShortcutsItem(name: String(name), toggle: toggle, error: makeErrorHandler())
+        )
+    }
+
+    private func makeErrorHandler() -> (String) -> Void {
+        { [weak self] info in
+            guard let self else { return }
+            model.errorInfo = info
+            model.showErrorToast = true
+        }
     }
     
     func getAllInstalledShortcutName() async -> [String]? {

@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import Combine
 import ComposableArchitecture
 import SwiftUI
 import OnlyControl
@@ -15,7 +16,6 @@ import Foundation
 struct OnlyControlView: View {
     @Environment(\.colorScheme) private var colorScheme
     let store: StoreOf<OnlyControlReducer>
-    @ObservedObject private var playerItem = RadioStationSwitch.shared.playerItem
     @State private var currentDate = Date()
     
     private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
@@ -28,14 +28,6 @@ struct OnlyControlView: View {
         WithPerceptionTracking {
             ZStack {
                 VisualEffectView(material: .popover, blendingMode: .behindWindow)
-
-                VStack {
-                    Spacer()
-                    BluredSoundWave(width: 800, height: 200)
-                        .rotation3DEffect(.degrees(180), axis: (x: 1, y: 0, z: 0))
-                        .opacity(0.9)
-                        .isHidden(!store.soundWaveEffectDisplay || !playerItem.isPlaying, remove: true)
-                }
 
                 VStack(spacing: 0) {
                     Spacer()
@@ -74,27 +66,13 @@ struct OnlyControlView: View {
 
                     HStack {
                         Spacer()
-                        if playerItem.streamInfo == "" {
-                            HStack {
-                                Text("Only Switch")
-                                    .fontWeight(.bold)
-                                    .padding(10)
+                        HStack {
+                            Text("Only Switch")
+                                .fontWeight(.bold)
+                                .padding(10)
 
-                                Text("v\(SystemInfo.majorVersion as! String)")
-                                    .offset(x:-10)
-                            }
-                            .transition(.move(edge: .bottom))
-
-                        } else {
-                            RollingText(
-                                text: playerItem.streamInfo,
-                                leftFade: 16,
-                                rightFade: 16,
-                                startDelay: 3
-                            )
-                            .frame(height:20)
-                            .padding(10)
-                            .transition(.move(edge: .bottom))
+                            Text("v\(SystemInfo.majorVersion as! String)")
+                                .offset(x:-10)
                         }
 
                         Spacer()

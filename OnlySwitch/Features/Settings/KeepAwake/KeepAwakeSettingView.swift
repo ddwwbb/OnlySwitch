@@ -12,6 +12,17 @@ struct KeepAwakeSettingView: View {
     
     var body: some View {
         Form {
+            // MARK: - Clamshell Section
+            Section {
+                Toggle(isOn: $vm.preventClamshellSleep) {
+                    Text("Prevent sleep when lid closed:".localized())
+                }
+            } header: {
+                Text("Clamshell".localized())
+            } footer: {
+                Text("Requires power adapter. On battery power, closing the lid still puts the Mac to sleep.".localized())
+            }
+
             // MARK: - Duration Section
             Section {
                 Toggle(isOn: $vm.scheduleMode) {
