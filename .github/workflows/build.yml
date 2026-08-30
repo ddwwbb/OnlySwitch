@@ -1,15 +1,19 @@
-name: Build macOS
+name: Build and Release macOS
 
 on:
   push:
     branches:
       - main
       - only-switch-lite
+    tags:
+      - 'v*'
   pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: macos-build-${{ github.ref }}
@@ -17,13 +21,13 @@ concurrency:
 
 jobs:
   build:
-    name: Test and Build
-    runs-on: macos-26
+    name: Test, Build and Release
+    runs-on: macos-14
     timeout-minutes: 60
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Show environment
         run: |
@@ -62,19 +66,46 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             build
 
-      - name: Package app
+      - name: Package app (ZIP & DMG)
         run: |
           APP_PATH="$RUNNER_TEMP/OnlySwitchDerivedData/Build/Products/Release/OnlySwitch.app"
-          ARCHIVE_PATH="$RUNNER_TEMP/OnlySwitch-macOS-universal.zip"
+          ZIP_PATH="$RUNNER_TEMP/OnlySwitch-macOS-universal.zip"
+          DMG_PATH="$RUNNER_TEMP/OnlySwitch-macOS-universal.dmg"
+          CHECKSUM_PATH="$RUNNER_TEMP/checksums.txt"
+
           test -d "$APP_PATH"
           lipo "$APP_PATH/Contents/MacOS/OnlySwitch" -verify_arch arm64
           lipo "$APP_PATH/Contents/MacOS/OnlySwitch" -verify_arch x86_64
-          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ARCHIVE_PATH"
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
+          # Package ZIP
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
+
+          # Package DMG
+          hdiutil create -volname "OnlySwitch" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
+
+          # Generate SHA256 Checksums
+          cd "$RUNNER_TEMP"
+          shasum -a 256 "OnlySwitch-macOS-universal.zip" "OnlySwitch-macOS-universal.dmg" > "$CHECKSUM_PATH"
+
+      - name: Upload CI artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: OnlySwitch-macOS-universal
-          path: ${{ runner.temp }}/OnlySwitch-macOS-universal.zip
+          path: |
+            ${{ runner.temp }}/OnlySwitch-macOS-universal.zip
+            ${{ runner.temp }}/OnlySwitch-macOS-universal.dmg
+            ${{ runner.temp }}/checksums.txt
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ runner.temp }}/OnlySwitch-macOS-universal.zip
+            ${{ runner.temp }}/OnlySwitch-macOS-universal.dmg
+            ${{ runner.temp }}/checksums.txt
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
