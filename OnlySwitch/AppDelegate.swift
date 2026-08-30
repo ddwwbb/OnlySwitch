@@ -146,6 +146,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     var checkUpdatePresenter = GitHubPresenter.shared
     private var desktopPetController: DesktopPetController?
+    private let remoteAccessController = RemoteAccessController()
+    private var isStoppingRemoteAccess = false
+    private var didStopRemoteAccess = false
 
     private var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -155,6 +158,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard !isRunningTests else { return }
 
+        Task { await remoteAccessController.startIfEnabled() }
         //for issue #11
         closeWindow()
         let contentView = OnlySwitchListView()
@@ -203,6 +207,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: .desktopPetVisibilityChanged,
             object: nil
         )
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard !didStopRemoteAccess else { return .terminateNow }
+        guard !isStoppingRemoteAccess else { return .terminateLater }
+        isStoppingRemoteAccess = true
+        Task {
+            await remoteAccessController.stopForTermination()
+            didStopRemoteAccess = true
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
     }
 
     private func setupDesktopPet() {

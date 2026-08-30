@@ -104,6 +104,9 @@ struct SettingsView: View {
             case .KeyLight:
                 KeyLightView(store: settingVM.keyLightStore)
 
+            case .iOSRemote:
+                RemoteAccessSettingsView(store: settingVM.remoteAccessStore)
+
             case .About:
                 AboutView()
         }

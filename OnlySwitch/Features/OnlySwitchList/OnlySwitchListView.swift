@@ -24,6 +24,7 @@ struct OnlySwitchListView: View {
     @State private var movingIndex = -1
     @State private var hoverIndex = -1
     @ObservedObject private var authenticatorStore = AuthenticatorStore.shared
+    @ObservedObject private var soundMixerVM = SoundMixerVM.shared
     @ObservedObject private var languageManager = LanguageManager.sharedManager
     @FocusState var focusedBar: Focusable?
 
@@ -43,6 +44,9 @@ struct OnlySwitchListView: View {
                     VStack(spacing: 0) {
                         AuthenticatorPanelView()
                             .isHidden(!shouldShowAuthenticatorPanel, remove: true)
+
+                        SoundMixerPanelView()
+                            .isHidden(!soundMixerVM.enabled, remove: true)
 
                         if switchVM.currentAppearance == SwitchListAppearance.single.rawValue {
                             singleSwitchList
@@ -382,7 +386,13 @@ struct OnlySwitchListView: View {
             totalHeight += categoryHeight(count: switchVM.toolItemList.count)
             totalHeight -= 30.0
         }
-        
+
+        // After the two-column branch, which recomputes `totalHeight` from the categories: the
+        // mixer panel sits above both layouts and needs its header row's height in either.
+        if soundMixerVM.enabled {
+            totalHeight += 45.0
+        }
+
         let height = min(totalHeight, switchVM.maxHeight - 150)
         guard height > 0 else { return 300 }
         return height

@@ -83,6 +83,8 @@ extension SwitchType {
             return KeyLightSwitch.shared
         case .authenticator:
             return AuthenticatorSwitch.shared
+        case .soundMixer:
+            return SoundMixerSwitch.shared
         }
     }
     

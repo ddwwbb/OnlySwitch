@@ -84,7 +84,7 @@ Everyone can contribute macOS Shortcuts for OnlySwitch now. Please read [How to 
 | Dim Screen          | finished        | Eject Discs              | finished          |
 | Hide Windows        | partly finished | True Tone                | finished          |
 | Top Sticker         | partly finished | Key Light                | finished          |
-| Authenticator       | finished        |                          |                   |
+| Authenticator       | finished        | Sound Mixer              | finished          |
 
 Since Version 1.3, switches can be added to or removed from the list.
 
@@ -212,12 +212,7 @@ Since version 2.3.10, this switch can be controlled via right-click icons.
 @kant for syntax issue 
 
 @Ryderwe for Authenticator
-
-@lou1s19 for dim mode for the external monitor
-
+@lou1s19 for Sound Mixer and dim mode for the external monitor
 
 ## License
 MIT
-
-## Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=jacklandrin/OnlySwitch&type=Date)](https://star-history.com/#jacklandrin/OnlySwitch&Date)

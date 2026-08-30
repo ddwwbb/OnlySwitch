@@ -29,8 +29,9 @@ OnlySwitch.xcodeproj/project.xcworkspace/xcuserdata/*
 appcast
 .worktrees/
 docs/
-
 # Build artifacts
 build/
 .build/
 DerivedData/
+.superpowers
+doc/plan

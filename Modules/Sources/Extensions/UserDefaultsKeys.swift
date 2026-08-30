@@ -34,6 +34,8 @@ public extension UserDefaults {
         //Sort
         public static let orderWeight = "orderWeightKey"
         public static let onlyControlOrderWeight = "onlyControlOrderWeightKey"
+        //Sound Mixer
+        public static let soundMixerEnabled = "soundMixerEnabledKey"
         //Keep Awake
         public static let autoStopKeepAwakeMode = "autoStopKeepAwakeModeKey"
         public static let autoStopKeepAwakeTime = "autoStopKeepAwakeTimeKey"

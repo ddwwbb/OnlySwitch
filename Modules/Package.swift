@@ -6,7 +6,8 @@ import PackageDescription
 let package = Package(
     name: "Modules",
     platforms: [
-        .macOS(.v14)
+        .macOS(.v14),
+        .iOS(.v18)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -55,11 +56,19 @@ let package = Package(
         .library(
             name: "DesktopPet",
             targets: ["DesktopPet"]
+        ),
+        .library(
+            name: "RemoteCore",
+            targets: ["RemoteCore"]
+        ),
+        .library(
+            name: "RemoteTransport",
+            targets: ["RemoteTransport"]
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.26.0"),
-        .package(url: "https://github.com/pointfreeco/swift-sharing", exact: "2.8.1"),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.26.2"),
+        .package(url: "https://github.com/pointfreeco/swift-sharing", exact: "2.10.0"),
         .package(url: "https://github.com/gonzalezreal/swift-markdown-ui", exact: "2.3.1"),
         .package(url: "https://github.com/Alamofire/Alamofire", exact: "5.5.0"),
     ],
@@ -135,12 +144,21 @@ let package = Package(
         .target(
             name: "DesktopPet"
         ),
+        .target(
+            name: "RemoteCore"
+        ),
+        .target(
+            name: "RemoteTransport",
+            dependencies: ["RemoteCore"]
+        ),
         .testTarget(
             name: "ModulesTests",
             dependencies: [
                 "Authenticator",
                 "DesktopPet",
                 "OnlyControl",
+                "RemoteCore",
+                "RemoteTransport",
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ]
         )
