@@ -7,6 +7,7 @@
 
 import XCTest
 import Combine
+import Testing
 @testable import OnlySwitch
 
 class OnlySwitchTests: XCTestCase {
@@ -198,4 +199,55 @@ class OnlySwitchTests: XCTestCase {
         }
     }
 
+}
+
+struct KeepAwakeDisplayTests {
+    @Test func closingLidReleasesDisplayKeepAwakeAndOpeningRestoresIt() {
+        var state = KeepAwakeDisplayState(
+            isLidClosed: false, hasExternalDisplay: false, isBuiltinDisplayAwake: true
+        )
+        #expect(state.shouldKeepDisplayAwake)
+        #expect(!state.shouldSleepDisplay(preventClamshellSleep: true))
+
+        state.isLidClosed = true
+        #expect(!state.shouldKeepDisplayAwake)
+        #expect(state.shouldSleepDisplay(preventClamshellSleep: true))
+
+        state.isBuiltinDisplayAwake = false
+        #expect(!state.shouldSleepDisplay(preventClamshellSleep: true))
+
+        state.isBuiltinDisplayAwake = true
+        #expect(state.shouldSleepDisplay(preventClamshellSleep: true))
+
+        state.isLidClosed = false
+        #expect(state.shouldKeepDisplayAwake)
+        #expect(!state.shouldSleepDisplay(preventClamshellSleep: true))
+    }
+
+    @Test func clamshellModeDoesNotPutExternalDisplaysToSleep() {
+        let state = KeepAwakeDisplayState(
+            isLidClosed: true, hasExternalDisplay: true, isBuiltinDisplayAwake: true
+        )
+        #expect(state.shouldKeepDisplayAwake)
+        #expect(!state.shouldSleepDisplay(preventClamshellSleep: true))
+    }
+
+    @Test func ordinaryKeepAwakeDoesNotForceClamshellDisplaySleep() {
+        let state = KeepAwakeDisplayState(
+            isLidClosed: true, hasExternalDisplay: false, isBuiltinDisplayAwake: true
+        )
+        #expect(!state.shouldSleepDisplay(preventClamshellSleep: false))
+    }
+
+    @Test func openingLidWakesSleepingDisplayButDoesNotUndoManualSleep() {
+        var state = KeepAwakeDisplayState(
+            isLidClosed: true, hasExternalDisplay: false, isBuiltinDisplayAwake: false
+        )
+        #expect(!state.shouldWakeDisplay(wasLidClosed: true))
+        state.isLidClosed = false
+        #expect(state.shouldWakeDisplay(wasLidClosed: true))
+        #expect(!state.shouldWakeDisplay(wasLidClosed: false))
+        state.isBuiltinDisplayAwake = true
+        #expect(!state.shouldWakeDisplay(wasLidClosed: true))
+    }
 }

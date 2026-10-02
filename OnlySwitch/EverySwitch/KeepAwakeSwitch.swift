@@ -12,6 +12,111 @@ import IOKit.pwr_mgt
 import Combine
 import Switches
 import Defines
+import Dependencies
+
+struct KeepAwakeDisplayState: Sendable {
+    var isLidClosed: Bool
+    var hasExternalDisplay: Bool
+    var isBuiltinDisplayAwake: Bool
+
+    var shouldKeepDisplayAwake: Bool { !isLidClosed || hasExternalDisplay }
+
+    func shouldSleepDisplay(preventClamshellSleep: Bool) -> Bool {
+        preventClamshellSleep && isLidClosed
+            && !hasExternalDisplay && isBuiltinDisplayAwake
+    }
+
+    func shouldWakeDisplay(wasLidClosed: Bool) -> Bool {
+        wasLidClosed && !isLidClosed && !isBuiltinDisplayAwake
+    }
+}
+
+struct KeepAwakeDisplayClient: Sendable {
+    var readState: @Sendable () throws -> KeepAwakeDisplayState
+    var sleepDisplay: @Sendable () throws -> Void
+    var wakeDisplay: @Sendable () throws -> Void
+}
+
+extension KeepAwakeDisplayClient: DependencyKey {
+    static let liveValue = Self(
+        readState: {
+            let root = IOServiceGetMatchingService(
+                kIOMainPortDefault, IOServiceMatching("IOPMrootDomain")
+            )
+            guard root != IO_OBJECT_NULL else { throw SwitchError.OperationFailed }
+            defer { IOObjectRelease(root) }
+            let lidProperty = IORegistryEntryCreateCFProperty(
+                root, "AppleClamshellState" as CFString, kCFAllocatorDefault, 0
+            )?.takeRetainedValue()
+            // 台式 Mac 没有合盖传感器，沿用开盖时的显示器保活行为。
+            let lidClosed: Bool
+            if let lidProperty {
+                guard let value = lidProperty as? Bool else { throw SwitchError.OperationFailed }
+                lidClosed = value
+            } else {
+                lidClosed = false
+            }
+
+            var count: UInt32 = 0
+            guard CGGetOnlineDisplayList(0, nil, &count) == .success else {
+                throw SwitchError.OperationFailed
+            }
+            let displayState = try withUnsafeTemporaryAllocation(
+                of: CGDirectDisplayID.self, capacity: Int(count)
+            ) { displays in
+                guard CGGetOnlineDisplayList(count, displays.baseAddress, &count) == .success else {
+                    throw SwitchError.OperationFailed
+                }
+                var hasExternalDisplay = false
+                var isBuiltinDisplayAwake = false
+                for display in displays.prefix(Int(count)) {
+                    if CGDisplayIsBuiltin(display) != 0 {
+                        isBuiltinDisplayAwake = isBuiltinDisplayAwake
+                            || CGDisplayIsAsleep(display) == 0
+                    } else {
+                        hasExternalDisplay = true
+                    }
+                }
+                return (hasExternalDisplay, isBuiltinDisplayAwake)
+            }
+            return KeepAwakeDisplayState(
+                isLidClosed: lidClosed,
+                hasExternalDisplay: displayState.0,
+                isBuiltinDisplayAwake: displayState.1
+            )
+        },
+        sleepDisplay: {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
+            process.arguments = ["displaysleepnow"]
+            try process.run()
+            process.waitUntilExit()
+            guard process.terminationStatus == 0 else { throw SwitchError.OperationFailed }
+        },
+        wakeDisplay: {
+            var id = IOPMAssertionID()
+            guard IOPMAssertionDeclareUserActivity(
+                "保持唤醒：开盖恢复显示" as CFString, kIOPMUserActiveLocal, &id
+            ) == kIOReturnSuccess else { throw SwitchError.OperationFailed }
+            guard IOPMAssertionRelease(id) == kIOReturnSuccess else {
+                throw SwitchError.OperationFailed
+            }
+        }
+    )
+
+    static let testValue = Self(
+        readState: { throw SwitchError.OperationFailed },
+        sleepDisplay: { throw SwitchError.OperationFailed },
+        wakeDisplay: { throw SwitchError.OperationFailed }
+    )
+}
+
+extension DependencyValues {
+    var keepAwakeDisplay: KeepAwakeDisplayClient {
+        get { self[KeepAwakeDisplayClient.self] }
+        set { self[KeepAwakeDisplayClient.self] = newValue }
+    }
+}
 
 enum ClamshellSleepOverrideCommand {
     static let statusCommand = "/usr/bin/pmset -g"
@@ -127,6 +232,10 @@ final class KeepAwakeSwitch: SwitchProvider, @unchecked Sendable {
     weak var delegate: SwitchDelegate?
     private let reasonForActivity = "Reason for activity" as CFString
     private var assertionIDs: [IOPMAssertionID] = []
+    private var displayAssertionID: IOPMAssertionID?
+    private var keepsDisplayAwake = false
+    private var wasLidClosed = false
+    @Dependency(\.keepAwakeDisplay) private var displayClient
 
     @UserDefaultValue(key: UserDefaults.Key.KeepAwakeKey, defaultValue: false)
     private var preventedSleep
@@ -249,6 +358,14 @@ final class KeepAwakeSwitch: SwitchProvider, @unchecked Sendable {
     private func setTimer() {
         secondTimer.sink{ [weak self] _ in
             guard let strongSelf = self else {return}
+            Task { @MainActor [weak strongSelf] in
+                guard let strongSelf, strongSelf.preventedSleep else { return }
+                do {
+                    try strongSelf.updateDisplaySleep()
+                } catch {
+                    NSLog("保持唤醒：更新合盖息屏状态失败：\(error)")
+                }
+            }
             if let isUsingACPower = KeepAwakePowerPolicy.currentPowerSourceUsesAC(),
                strongSelf.powerPolicy.shouldStopKeepAwake(
                    isUsingACPower: isUsingACPower,
@@ -335,20 +452,54 @@ final class KeepAwakeSwitch: SwitchProvider, @unchecked Sendable {
         }
     }
 
-    /// Keep the display awake while the switch is on. Lid-close sleep is handled
-    /// separately because IOPM assertions do not override clamshell sleep.
+    /// 系统保活与显示器保活独立管理；合盖时只释放显示器保活。
     private func createAssertions() throws {
         guard assertionIDs.isEmpty else { return }
-        var id = IOPMAssertionID()
-        let success = IOPMAssertionCreateWithName(
-            kIOPMAssertionTypeNoDisplaySleep as CFString,
-            IOPMAssertionLevel(kIOPMAssertionLevelOn),
-            reasonForActivity,
-            &id)
-        if success == kIOReturnSuccess {
-            assertionIDs.append(id)
-        } else {
-            throw SwitchError.OperationFailed
+        let displayState = try displayClient.readState()
+        do {
+            for assertionType in [
+                kIOPMAssertionTypePreventUserIdleSystemSleep,
+                kIOPMAssertionTypePreventUserIdleDisplaySleep
+            ] {
+                let isDisplayAssertion = assertionType == kIOPMAssertionTypePreventUserIdleDisplaySleep
+                let isEnabled = !isDisplayAssertion || displayState.shouldKeepDisplayAwake
+                var id = IOPMAssertionID()
+                guard IOPMAssertionCreateWithName(
+                    assertionType as CFString,
+                    IOPMAssertionLevel(isEnabled ? kIOPMAssertionLevelOn : kIOPMAssertionLevelOff),
+                    reasonForActivity,
+                    &id
+                ) == kIOReturnSuccess else { throw SwitchError.OperationFailed }
+                assertionIDs.append(id)
+                if isDisplayAssertion {
+                    displayAssertionID = id
+                    keepsDisplayAwake = isEnabled
+                }
+            }
+            wasLidClosed = displayState.isLidClosed
+        } catch {
+            _ = releaseAllAssertions()
+            throw error
+        }
+    }
+
+    private func updateDisplaySleep() throws {
+        guard let displayAssertionID else { return }
+        let state = try displayClient.readState()
+        if keepsDisplayAwake != state.shouldKeepDisplayAwake {
+            let level = state.shouldKeepDisplayAwake
+                ? kIOPMAssertionLevelOn : kIOPMAssertionLevelOff
+            guard IOPMAssertionSetProperty(
+                displayAssertionID, kIOPMAssertionLevelKey as CFString, NSNumber(value: level)
+            ) == kIOReturnSuccess else { throw SwitchError.OperationFailed }
+            keepsDisplayAwake = state.shouldKeepDisplayAwake
+        }
+        if state.shouldWakeDisplay(wasLidClosed: wasLidClosed) {
+            try displayClient.wakeDisplay()
+        }
+        wasLidClosed = state.isLidClosed
+        if state.shouldSleepDisplay(preventClamshellSleep: appliedPreventClamshell) {
+            try displayClient.sleepDisplay()
         }
     }
 
@@ -359,6 +510,10 @@ final class KeepAwakeSwitch: SwitchProvider, @unchecked Sendable {
             if IOPMAssertionRelease(id) != kIOReturnSuccess {
                 failedIDs.append(id)
             }
+        }
+        if let displayAssertionID, !failedIDs.contains(displayAssertionID) {
+            self.displayAssertionID = nil
+            keepsDisplayAwake = false
         }
         assertionIDs = failedIDs
         return failedIDs.isEmpty
